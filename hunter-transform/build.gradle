@@ -1,0 +1,46 @@
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation 'com.android.tools.build:gradle:3.6.3', {
+        exclude group:'org.ow2.asm'
+    }
+    implementation 'com.android.tools.build:gradle-api:3.6.3'
+
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'org.ow2.asm:asm:7.2'
+    implementation 'org.ow2.asm:asm-util:7.2'
+    implementation 'org.ow2.asm:asm-commons:7.2'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    google()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId "com.github.shyi"
+            artifactId "hunter-transform"
+            version "0.1.0-SNAPSHOT"
+
+            from components.java
+        }
+    }
+}
+
+//ext {
+//    repoType = "remote"
+//
+//    pom_artifact_id = "hunter-transform"
+//    pom_group = "com.github.shyi"
+//    pom_version_name = "0.01"
+//    is_release = true
+//}

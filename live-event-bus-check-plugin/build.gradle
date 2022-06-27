@@ -1,0 +1,46 @@
+apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation 'com.android.tools.build:gradle:3.6.3', {
+        exclude group:'org.ow2.asm'
+    }
+    implementation 'com.android.tools.build:gradle-api:3.6.3'
+
+    //noinspection GradleDependency
+    implementation 'org.ow2.asm:asm:7.2'
+    //noinspection GradleDependency
+    implementation 'org.ow2.asm:asm-util:7.2'
+    //noinspection GradleDependency
+    implementation 'org.ow2.asm:asm-commons:7.2'
+
+    implementation 'com.github.shyi:hunter-transform:0.1.0-SNAPSHOT'
+//    implementation project(":hunter-transform")
+
+    //    implementation 'commons-io:commons-io:2.6'
+//    implementation 'commons-codec:commons-codec:1.10'
+}
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    mavenLocal()
+    google()
+}
+
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId "com.github.shyi"
+            artifactId "live-event-bus-check-plugin"
+            version "0.1.0-SNAPSHOT"
+
+            from components.java
+        }
+    }
+}

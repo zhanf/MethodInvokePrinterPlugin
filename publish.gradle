@@ -1,0 +1,99 @@
+apply plugin: "maven-publish"
+
+//if (!project.ext.has('GROUP') || !project.ext.has('ARTIFACT') || !project.ext.has('VERSION')) {
+//    throw new MissingPropertyException("Extra properties['GROUP', 'ARTIFACT', 'VERSION'] are required.")
+//}
+
+boolean isAndroidModule = false
+boolean isJavaModule = false
+if (project.plugins.hasPlugin('com.android.library')) {
+    isAndroidModule = true
+} else if (project.plugins.hasPlugin('java')) {
+    isJavaModule = true
+} else {
+    throw new UnknownPluginException('Just support android/java projects now.')
+}
+
+// task to generate source.jar
+task sourcesJar(type: Jar) {
+    group 'build'
+    archiveClassifier.set('sources')
+}
+
+// task to generate javadoc
+if (isAndroidModule) {
+    sourcesJar {
+        from android.sourceSets.main.java.srcDirs
+    }
+
+    task javadoc(type: Javadoc) {
+        group 'documentation'
+        options.encoding = 'UTF-8'
+        source = android.sourceSets.main.java.srcDirs
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        failOnError false
+    }
+} else if (isJavaModule) {
+    sourcesJar {
+        from sourceSets.main.java.srcDirs
+    }
+
+    javadoc {
+        options.encoding = 'UTF-8'
+        failOnError false
+    }
+}
+
+// task to generate javadoc.jar
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    group 'build'
+    from javadoc.getDestinationDir()
+    archiveClassifier.set('javadoc')
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                groupId = pom_group
+                artifactId = pom_artifact_id
+                if (is_release) {
+                    version = pom_version_name
+                } else {
+                    version = pom_version_name + "-SNAPSHOT"
+                }
+                // 上传source，这样使用放可以看到方法注释
+                artifact sourcesJar
+                artifact javadocJar
+
+                if (isAndroidModule) {
+                    from components.release
+                } else if (isJavaModule) {
+                    from components.java
+                }
+
+            }
+        }
+        repositories {
+//            mavenLocal()
+            maven {
+                // 可以有且仅有一个仓库不指定 name 属性，会隐式设置为 Maven
+                // 根据 versionName 来判断仓库地址
+                url = is_release ? RELEASE_REPOSITORY_URL : SNAPSHOT_REPOSITORY_URL
+                // 仓库用户名密码
+                credentials {
+                    username = getRepositoryUsername()
+                    password = getRepositoryPassword()
+                }
+            }
+        }
+    }
+}
+
+def getRepositoryUsername() {
+    return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
+}
+
+def getRepositoryPassword() {
+    return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
+}

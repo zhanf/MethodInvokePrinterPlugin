@@ -1,0 +1,9 @@
+//include ':center'
+//include ':plugin_manager'
+include ':live-event-bus-check-plugin'
+//include ':show'
+//include ':i_user'
+//include ':user'
+include ':app'
+rootProject.name = "enentbus-plugin"
+include ':hunter-transform'
